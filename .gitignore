@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+venv/
+.env
+
+# Logs and Debug
+*.log
+*.tmp
+*.swp
+
+# Face images
+known_faces/*/*.jpg
+uploads/
+*.png
+*.jpeg
+
+# Flask
+instance/
+*.db
+
+# VSCode / JetBrains
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
