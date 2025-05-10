@@ -39,6 +39,29 @@ def verify():
         return jsonify({'match': True, 'user': known_names[idx]})
     else:
         return jsonify({'match': False, 'error': 'No match'}), 200
+    
+    
+@app.route('/register-face', methods=['POST'])
+def register_face():
+    if 'image' not in request.files or 'name' not in request.form:
+        return jsonify({'success': False, 'error': 'Image and name required'}), 400
+
+    name = request.form['name']
+    image_file = request.files['image']
+    folder = os.path.join('known_faces', name)
+    os.makedirs(folder, exist_ok=True)
+
+    save_path = os.path.join(folder, image_file.filename)
+    image_file.save(save_path)
+
+    # Refresh known encodings
+    known_encodings.clear()
+    known_names.clear()
+    load_known_faces()
+    
+
+
+    return jsonify({'success': True, 'message': f'Registered {name}'}), 200    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
