@@ -14,11 +14,19 @@ def load_known_faces():
         person_dir = os.path.join(base_dir, person)
         for img_name in os.listdir(person_dir):
             img_path = os.path.join(person_dir, img_name)
-            image = face_recognition.load_image_file(img_path)
-            encodings = face_recognition.face_encodings(image)
-            if encodings:
-                known_encodings.append(encodings[0])
-                known_names.append(person)
+
+            # Skip non-image files
+            if not img_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                continue
+
+            try:
+                image = face_recognition.load_image_file(img_path)
+                encodings = face_recognition.face_encodings(image)
+                if encodings:
+                    known_encodings.append(encodings[0])
+                    known_names.append(person)
+            except Exception as e:
+                print(f"⚠️ Skipped file {img_path}: {e}")
 
 load_known_faces()
 
@@ -61,7 +69,27 @@ def register_face():
     
 
 
-    return jsonify({'success': True, 'message': f'Registered {name}'}), 200    
+    return jsonify({'success': True, 'message': f'Registered {name}'}), 200  
+
+
+@app.route('/face/<user_id>', methods=['DELETE'])
+def delete_face(user_id):
+    user_dir = os.path.join('known_faces', user_id)
+
+    if not os.path.exists(user_dir):
+        return jsonify({'success': False, 'error': 'User not found'}), 404
+
+    for file in os.listdir(user_dir):
+        os.remove(os.path.join(user_dir, file))
+    os.rmdir(user_dir)
+
+    # Refresh encodings
+    known_encodings.clear()
+    known_names.clear()
+    load_known_faces()
+
+    return jsonify({'success': True, 'message': f'Face data for {user_id} deleted'}), 200
+  
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
