@@ -62,14 +62,18 @@ def register_face():
     save_path = os.path.join(folder, image_file.filename)
     image_file.save(save_path)
 
-    # Refresh known encodings
-    known_encodings.clear()
-    known_names.clear()
-    load_known_faces()
-    
+    try:
+        image = face_recognition.load_image_file(save_path)
+        encodings = face_recognition.face_encodings(image)
+        if encodings:
+            known_encodings.append(encodings[0])
+            known_names.append(name)
+        else:
+            return jsonify({'success': False, 'error': 'No face found in image'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
-
-    return jsonify({'success': True, 'message': f'Registered {name}'}), 200  
+    return jsonify({'success': True, 'message': f'Registered {name}'}), 200
 
 
 @app.route('/face/<user_id>', methods=['DELETE'])
@@ -83,12 +87,20 @@ def delete_face(user_id):
         os.remove(os.path.join(user_dir, file))
     os.rmdir(user_dir)
 
-    # Refresh encodings
-    known_encodings.clear()
-    known_names.clear()
-    load_known_faces()
+    # Remove from in-memory encodings
+    global known_encodings, known_names
+    updated_encodings = []
+    updated_names = []
+    for i in range(len(known_names)):
+        if known_names[i] != user_id:
+            updated_encodings.append(known_encodings[i])
+            updated_names.append(known_names[i])
+
+    known_encodings = updated_encodings
+    known_names = updated_names
 
     return jsonify({'success': True, 'message': f'Face data for {user_id} deleted'}), 200
+
   
 
 if __name__ == '__main__':
