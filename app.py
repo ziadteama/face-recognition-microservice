@@ -44,10 +44,10 @@ def verify():
     matches = face_recognition.compare_faces(known_encodings, encodings[0])
     if True in matches:
         idx = matches.index(True)
-        return jsonify({'match': True, 'user': known_names[idx]})
+        return jsonify({'match': True, 'userId': known_names[idx]})
     else:
         return jsonify({'match': False, 'error': 'No match'}), 200
-    
+
     
 @app.route('/register-face', methods=['POST'])
 def register_face():
