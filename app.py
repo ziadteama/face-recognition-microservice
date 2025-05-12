@@ -68,12 +68,13 @@ def register_face():
         if encodings:
             known_encodings.append(encodings[0])
             known_names.append(name)
+            print (f"Registered {name}")
         else:
             return jsonify({'success': False, 'error': 'No face found in image'}), 400
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-    return jsonify({'success': True, 'message': f'Registered {name}'}), 200
+    return jsonify({'success': True, 'user_id': name}), 200
 
 
 @app.route('/face/<user_id>', methods=['DELETE'])
